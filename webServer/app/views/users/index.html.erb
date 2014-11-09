@@ -1,0 +1,41 @@
+<h1>所有帳號</h1>
+
+<table border="1" id="adm_users_table">
+  <tr>
+    <th>姓名</th>
+    <th>Username</th>
+    <th>單位/系所</th>
+    <th>單位系所位置</th>
+    <th>分機</th>
+    <th>聯絡電話</th>
+    <th>Email</th>
+    <th>權限</th>
+    <th></th>
+  </tr>
+
+<% @adm_users.each do |adm_user| %>
+  <tr>
+  	
+  	<%if adm_user.verified %>	
+    <td><%= adm_user.name %></td>
+    <td><%= adm_user.username %></td>
+    <td><%= adm_user.department %></td>
+    <td>
+    	<%if !adm_user.campus_buildings_list_id.blank?%>   	
+    	<%= CampusBuildingsList.find(adm_user.campus_buildings_list_id).campus_name+"-"+CampusBuildingsList.find(adm_user.campus_buildings_list_id).building_name %>
+	  	<%else%>
+    	無
+    	<%end%>
+    </td>    
+    <td><%= adm_user.extend %></td>
+    <td><%= adm_user.phone %></td>
+    <%else%>
+    <td align="center" colspan="6" style="color: red;">未認証</td>
+    <%end%>
+    
+    <td><%= adm_user.email %></td>
+    <td><%= authorizationTranslate(adm_user.authorization) %></td>
+    <td><%= link_to '刪除', adm_user, method: :delete, data: { confirm: '你確定要刪除?' } %></td>
+  </tr>
+<% end %>
+</table>

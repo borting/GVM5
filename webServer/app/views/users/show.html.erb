@@ -1,0 +1,49 @@
+<p id="notice"><%= notice %></p>
+<h1>編輯我的帳號</h1>
+<br>
+<div class="menu_border_blue">
+<span id="my_button"><%= link_to '編輯', edit_adm_user_path(@adm_user) %></span>
+</div>
+<p>
+  <b>姓名:</b>
+  <%= @adm_user.name %>
+</p>
+
+<p>
+  <b>Username:</b>
+  <%= @adm_user.username %>
+</p>
+
+<p>
+  <b>單位/系所:</b>
+  <%= @adm_user.department %>
+</p>
+
+<p>
+  <b>單位系所位置:</b>
+  <%if !@adm_user.campus_buildings_list_id.blank?%>   	
+  	<%= CampusBuildingsList.find(@adm_user.campus_buildings_list_id).campus_name+"-"+CampusBuildingsList.find(@adm_user.campus_buildings_list_id).building_name %>
+  <%else%>
+   	無
+  <%end%>
+</p>
+
+<p>
+  <b>分機:</b>
+  <%= @adm_user.extend %>
+</p>
+
+<p>
+  <b>聯絡電話:</b>
+  <%= @adm_user.phone %>
+</p>
+
+<p>
+  <b>Email:</b>
+  <%= @adm_user.email %>
+</p>
+
+<p>
+  <b>權限:</b>
+  <%= authorizationTranslate(@adm_user.authorization) %>
+</p>

@@ -1,0 +1,13 @@
+<p id="notice"><%= notice %></p>
+<%=form_tag do%>
+	<div>
+		<span style="width:90px; display: inline-block;">Username:</span>
+		<%=text_field_tag :username, params[:username]%>
+	</div>
+	<div>
+		<span style="width:90px; display: inline-block;">Password:</span>
+		<%=password_field_tag :password, params[:password]%>
+	</div>		
+		 <%=submit_tag "sign in", id: 'button_create'%>
+<%end%>
+		 <%=button_to "sign up", new_user_path, :method => "get", id: 'button_create'%>

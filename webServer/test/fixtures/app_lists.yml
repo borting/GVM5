@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  vm_list_id: 1
+  app_name: MyString
+  port: 1
+
+two:
+  vm_list_id: 1
+  app_name: MyString
+  port: 1

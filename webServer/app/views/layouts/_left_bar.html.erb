@@ -1,0 +1,878 @@
+<style>
+    .table 
+    {   	
+        border-collapse: collapse;
+        border-spacing: 0;
+        display: table;
+        /*width: 390px;*/
+        /*font-size: 10px;*/
+    }
+    .table  a:hover
+    {   	
+		background:none;
+		text-decoration: none;		      
+    }
+    .tr
+    {   	
+        display: table-row, inline-block; 
+    } 
+    .td 
+    {
+    	width:180px;
+    	text-align: center; 	
+		height:30px;
+        /*border-bottom: dotted #B5DAFF;*/
+    	color: black;
+    	margin-left: auto;
+        margin-right: auto;
+        display: table-cell;        
+    }
+    .createVMtd 
+    {
+		height:20px;
+		width: 100px;
+        /*border-bottom: dotted #B5DAFF;*/
+
+        display: table-cell;        
+    }  
+    
+	.slideout  
+	{
+	    background: #666;
+	    position: absolute;
+	}
+    
+	.clickme  
+	{
+		opacity:0.3;
+	    position: absolute;
+	    top: 0; right: -40px;
+	    height: 40px;
+	    width: 40px;
+	    background: #ff0000;
+	}
+
+	.slidecontent 
+	{
+    	float:left;
+	}
+/*=============================================*/    
+	.slideoutCreate  
+	{
+	    background: #B5DAFF;
+	    position: absolute;
+	    
+	   
+	}
+	    
+	.clickmeCreate  
+	{
+		opacity:0.3;
+	    position: absolute;
+	    top: 0; right: -40px;
+	    height: 40px;
+	    width: 40px;
+	    background: #B5DAFF;
+	}
+	
+	.slidecontentCreate 
+	{
+	    float:left;
+	}
+	
+	#create
+	{
+		top: 120px;
+		size: 20px;	
+	    width: 280px;
+	    height: 120px;
+	    left:-280px;	
+	}    
+</style>
+
+
+<%if session[:user_id]%>
+<script>
+$(function () {
+    $("#create_label").click(function () {
+        if($(this).parent().css("left") == "-280px"){
+        $(this).parent().animate({left:'0px'}, {queue: false, duration: 500});
+    }else {
+        $(this).parent().animate({left:'-280px'}, {queue: false, duration: 500});}
+    });
+});
+</script>
+
+<div class="slideoutCreate " id="create">
+    <div class="slidecontentCreate ">
+		<div class="innertube">
+			<%if session[:user_id]%>
+			<section class="table">	
+			   <div id="VMField">
+			   </div>	
+				<div class="tr">
+					<div id="createField">
+						<legend>New computer</legend>
+						<div class="tr">
+							<div class="createVMtd"><label>CPU   : </label></div>							
+							<div class="createVMtd">
+								<select id='textbox_cpu'>
+								  <option value="1">1 unit</option>
+								  <option value="2">2 units</option>
+								  <option value="3">3 units</option>
+								  <option value="4">4 units</option>
+								</select>
+							</div>
+						</div>
+						<div class="tr">
+							<div class="createVMtd"><label>Memory: </label></div>
+							<div class="createVMtd">
+								<select id='textbox_memory'>
+								  <option value="512">512 MB</option>
+								  <option value="1024">1024 MB</option>
+								  <option value="2048">2048 MB</option>
+								</select>
+							</div>
+						</div>	
+						<div class="tr">
+							<input type='button' value='Create' id='button_create'>
+						</div>
+						<div id='VM_loading' style='display: none;'>
+							<img alt='Loading' src='<%=asset_path('loading.gif')%>' />
+						</div>
+					</div>					
+				</div>
+			</section>
+			<%end%>	
+		</div>	
+    </div>
+    <div class="clickmeCreate " id="create_label">
+    </div>
+</div>
+
+<script>
+	var serialNoTable = new Array();
+	var appIconTable  = new Array();
+	var appNameTable  = new Array();
+    var app_list_timer;
+	$(document).ready(function()
+	{		
+		var request_app_table = $.ajax({
+				url: "/main/getAppTablejs",
+				type: "GET",
+				dataType: "json"
+				});
+		request_app_table.done(function(msg) {
+			
+					jQuery.each(msg, function(index, value)
+					{				
+					  appIconTable[index]=value.name+".png";
+					  appNameTable[index]=value.name;							  
+					});			
+
+				});
+		request_app_table.fail(function(jqXHR, textStatus) {	
+				alert( "Requesting app table failed, refreshing page again");
+				});
+		
+		<%@vm_lists.each do |v|%>	
+			addVM(<%=v.serial_no %>, <%=v.cpu %>, <%=v.memory %>);		   
+		<%end%>
+		
+	    $("#button_create").click(function () {
+	    	$(this).prop('disabled', true);
+			$("#VM_loading").show();
+			var request = $.ajax({
+					url: "/main/createVMjs",
+					type: "POST",
+					data: {cpu : $('#textbox_cpu').val(), memory: $('#textbox_memory').val()},
+					dataType: "json"
+					});
+			request.done(function(msg) {
+					$("#VM_loading").hide();	
+					$("#button_create").prop('disabled', false);
+						if(!msg.success) 
+						{
+							alert("Error: "+msg.reason);
+						}
+						else
+						{
+							addVM(msg.serial_no, msg.cpu, msg.memory);	
+							$('#textbox_cpu').val('');
+							$('#textbox_memory').val('')
+						}
+					});
+			request.fail(function(jqXHR, textStatus) {
+					$("#VM_loading").hide();				
+					alert( "Requesting failed, try again");
+					});	    	    	
+	     });				
+	});
+	  
+	function addVM(serial_no, cpu, memory)
+	{		
+		serialNoTable.push(serial_no);
+		var newSlideoutDiv= $(document.createElement('div')).attr({ id: 'VM_slideout_' + serial_no, class: 'slideout'});
+ 		$(newSlideoutDiv).css({'top': (120+serialNoTable.length*45).toString()+'px', 'width': '280px', 'height': '160px', 'left':'-280px'});
+
+		var newSlidecontentDiv = $(document.createElement('div')).attr({ id: 'VM_Slidecontent_' + serial_no, class: 'slidecontent'});
+
+		var newDetailDiv = $(document.createElement('div')).attr({ id: 'VM_detail_' + serial_no, class: 'tr'});
+		newDetailDiv.append("Serial_NO:"+serial_no+"<br>CPU:"+cpu+" Memory:"+memory);			
+		newDetailDiv.appendTo(newSlidecontentDiv);
+	    
+	    var newPicDiv = $(document.createElement('div')).attr({ id: 'VM_pic_' + serial_no, class: 'tr'});
+		newPicDiv.append("<a href='#' onclick='createAppIcon("+
+						  serial_no+
+						 ");'><img alt='Computer' height='100' src='<%=asset_path('computer.png')%>' width='100' /></a>"+
+						 "<a href='#' onclick='shutDownAJAX("+
+						  serial_no+
+						 ");'><img alt='Shutdown' height='27' src='<%=asset_path('power.png')%>' width='27' /></a>"+			
+						 "<a href='#' onclick='restartAJAX("+
+						  serial_no+
+						 ");'><img alt='Restart' height='27' src='<%=asset_path('restart.png')%>' width='27' /></a>"+
+						 "<a href='#' onclick='deleteAJAX("+
+						  serial_no+
+						 ");'><img alt='Delete' height='27' src='<%=asset_path('delete.png')%>' width='27' /></a>"						 
+						 );
+		newPicDiv.appendTo(newSlidecontentDiv);	
+						 
+	    var newLoadingDiv = $(document.createElement('div')).attr({ id: 'VM_loading_' + serial_no, class: 'tr'});
+		newLoadingDiv.append("<img alt='Loading' src='<%=asset_path('loading.gif')%>' />");				 					 
+		newLoadingDiv.appendTo(newSlidecontentDiv);	
+		newLoadingDiv.hide();			
+		newSlidecontentDiv.appendTo(newSlideoutDiv);		
+		
+		var newClickmeDiv = $(document.createElement('div')).attr({ id: 'VM_clickme_' + serial_no, class: 'clickme'});
+		newClickmeDiv.append("No:"+serial_no.toString());	
+		newClickmeDiv.appendTo(newSlideoutDiv);
+		newSlideoutDiv.appendTo("body");
+		$(function () {
+		    $('#VM_clickme_' + serial_no).click(function () {
+		        if($(this).parent().css("left") == "-280px"){
+		        $(this).parent().animate({left:'0px'}, {queue: false, duration: 500});
+		    }else {
+		        $(this).parent().animate({left:'-280px'}, {queue: false, duration: 500});}
+		    });
+		});		
+				
+	}	  	  
+	
+	function restartAJAX(seri) 
+	{	
+		$("#VM_loading_"+seri).show();
+		var request = $.ajax({
+				url: "/main/restartVMjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+					$("#VM_loading_"+seri).hide();	
+					if(!msg.success) 
+					{
+						alert("Serial No:"+msg.serial_no+" restarting failed");
+					}
+					else
+					{
+						alert("Serial No:"+msg.serial_no+" restarting successed");
+					}
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#VM_loading_"+seri).hide();				
+				alert( "Requesting failed, try again");
+				});
+	} 
+
+	function shutDownAJAX(seri) 
+	{	
+		$("#VM_loading_"+seri).show();
+		var request = $.ajax({
+				url: "/main/shutDownVMjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+				$("#VM_loading_"+seri).hide();	
+					if(!msg.success) 
+					{
+						alert("Serial No:"+msg.serial_no+" shutdown failed");
+					}
+					else
+					{
+						serialNoTable.splice( $.inArray(seri, serialNoTable ), 1);	
+						$('#VM_slideout_'+seri).remove();		
+						$.each(serialNoTable, function( index, value ) {
+							$('#VM_slideout_'+value).css({'top': (120+(index+1)*45).toString()+'px', 'width': '280px', 'height': '160px', 'left':'-280px'});
+							});					
+						//$('#VM_pic_'+msg.serial_no).remove();
+						clearInterval(app_list_timer);
+						$('#appField').empty();	
+						$('#appListTableField').empty();
+					}
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#VM_loading_"+seri).hide();	
+				alert( "Requesting failed, try again");
+				});
+	} 	
+	
+	
+	function createAppIcon(seri)
+	{			
+     	$('#applicationTitle').text("Serial NO "+seri+" 's applications")    
+	    $('#appListTableField').empty();	    
+	    var newLoadingDiv = $(document.createElement('div')).attr({ id: 'app_list_loading'});
+		newLoadingDiv.append("<img alt='Loading' src='<%=asset_path('loading.gif')%>' />");				 					 
+		newLoadingDiv.appendTo("#appListField");	
+		newLoadingDiv.hide();
+
+        //$('#appListTableField').empty();
+		getAppListAjax(seri);
+
+		clearInterval(app_list_timer); 
+	        app_list_timer = setInterval(function() {   				
+					$('#appListTableField').empty();
+					getAppListAjax(seri);	
+					}, 3000);
+	    
+        $('#appField').empty();	
+		var app_length=appNameTable.length;
+        var newTR=$(document.createElement('div')).attr({ class: 'tr'});
+        $.each(appNameTable, function(index, value) {		
+			var newPicDiv = $(document.createElement('div')).attr({ id: 'app_pic_appField_'+index, class: 'td'});
+			newPicDiv.append("<a href='#' style='text-decoration: none;' onclick='openAppAjax("+
+							  seri+
+							  ","+
+							  index+
+							 ");'><img alt='openApp' height='100' src='/assets/"+
+							 appIconTable[index]+ 
+							 "' width='100' /><br>"+
+							 value+
+							 "</a><br>"+
+							 "<img alt='Loading' src='<%=asset_path('loading.gif')%>' style='display:none;' id='app_loading_appField_"+
+							 index+ 
+							 "'/>"		
+							 );
+                        newTR.append(newPicDiv);	
+                        if((index+1)%5== 0 && index!= 0)
+			{
+				newTR.appendTo("#appField");
+				newTR = $(document.createElement('div')).attr({ class: 'tr'});     
+			}			
+			else if(index === app_length - 1)
+			{
+				newTR.appendTo("#appField");
+			}	
+		    });
+		}    	    
+
+        function openAppAjax(seri, app_name_id)
+        {
+                $("#app_loading_appField_"+app_name_id).show();
+                var return_port;
+                var request = $.ajax({
+                                    url: "/main/openAppjs",
+		                    type: "GET",
+			            data: {serial_no : seri, app_name_id : app_name_id },
+				    dataType: "json"
+				    });
+		    request.done(function(msg) {
+                                $("#app_loading_appField_"+app_name_id).hide();
+		                if(!msg.success)
+		                {
+		                    alert("Serial No:"+msg.serial_no+" opening app failed");
+		                }
+		                else
+		                {
+		                   var win =window.open('http://140.113.151.70:'+msg.port, msg.app_name);
+		                   $('#appListTableField').empty();
+		                   getAppListAjax(seri);
+                                   return_port=msg.port;
+
+	                            var timer = setInterval(function() {
+                                    	if(win.closed) {
+                                    	    clearInterval(timer);
+                                            if(checkAppAjax(return_port))
+                                            {
+											    var r=confirm("Serial_NO "+seri+" :Keep the process "+msg.port+" ?");
+											    if (r!=true)
+											    {
+											    	closeAppAjax(return_port);
+											    }
+                                            }
+                                          }
+                                    }, 1000);
+                                   }
+                                });
+                request.fail(function(jqXHR, textStatus) {
+                                $("#app_loading_appField_"+app_name_id).hide();
+				alert( "Requesting failed, try again");
+		                                    });
+		}
+        function openAppInListAjax(seri, app_port)
+        {
+			var win =window.open('http://140.113.151.70:'+app_port);
+            var timer = setInterval(function() {
+ 	               if(win.closed) 
+ 	               {
+ 	                   clearInterval(timer);
+ 	                   if(checkAppAjax(app_port))
+ 	                   {
+				    var r=confirm("Serial_NO "+seri+" :Keep the process "+app_port+" ?");
+				    if (r!=true)
+				    {
+				    	closeAppAjax(app_port);
+				    }
+ 	                   }
+        	       }
+                }, 1000);
+		}
+	function closeAppAjax(port)
+	{	
+		var request = $.ajax({
+				url: "/main/closeAppjs",
+				type: "GET",
+				data: {port : port },
+				dataType: "json"
+				});
+		request.fail(function(jqXHR, textStatus) {	
+				alert( "Requesting failed");
+				});				
+		
+	}
+
+	function checkAppAjax(port)
+	{	
+                var exist;
+		var request = $.ajax({
+				url: "/main/checkAppjs",
+				type: "GET",
+				data: {port : port },
+				dataType: "json",
+                                async: false
+				});
+		request.done(function(msg) {
+				exist=msg.exist;
+				});
+		return exist;
+        }
+
+	function getAppListAjax(seri)	
+	{
+		$("#app_list_loading").show();
+		var request = $.ajax({
+				url: "/main/getAppListjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+				$("#app_list_loading").hide();						
+					jQuery.each(msg, function()
+					{
+					
+					  var newPicDiv = $(document.createElement('div')).attr({ id: 'app_pic_appTableField_'+this.app_name_id+'_'+this.port, class: 'td'});
+					  $(newPicDiv).css({ 'width': '130px', 'height': '130px'});
+					  
+					  newPicDiv.append("<a href='#' style='text-decoration: none;' onclick='openAppInListAjax("+seri+
+							  ","+this.port+");'><img alt='openApp' height='90' width='90' style='position:absolute;' src='/assets/"+
+							 appIconTable[this.app_name_id]+ 
+							 "'/></a>"+
+							"<a href='#' style='text-decoration: none;' onclick='closeAppAjax("+
+							 this.port+");'><img alt='closeApp' height='35' width='35' style='position:absolute;' src='<%=asset_path('close.png')%>'"+
+							 "/></a>"						 		
+							 );
+							 					  
+					  /*
+					  newPicDiv.append("<a href='#' style='text-decoration: none;display:inline-block;' onclick='openAppInListAjax("+seri+
+							  ","+this.port+");'><img alt='openApp' height='100' src='/assets/"+
+							 appIconTable[this.app_name_id]+ 
+							 "' width='100' /><br>"+
+						 	appNameTable[this.app_name_id]+						 
+						 	"</a>"	
+							 );
+					  */		 
+                      newPicDiv.appendTo("#appListTableField");							  
+					});
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#app_list_loading").hide();	
+				alert( "Requesting failed, try again");
+				});		
+	}
+</script>
+<%end%>
+
+
+
+
+
+
+<!--
+<div id="left_framecontent">
+	<div class="innertube">
+		<%if session[:user_id]%>
+		<section class="table">	
+		   <div id="VMField">
+		   </div>	
+			<div class="tr">
+				<div id="createField">
+					<legend>New computer</legend>
+					<div class="tr">
+						<div class="createVMtd"><label>CPU   : </label></div>							
+						<div class="createVMtd">
+							<select id='textbox_cpu'>
+							  <option value="1">1 unit</option>
+							  <option value="2">2 units</option>
+							  <option value="3">3 units</option>
+							  <option value="4">4 units</option>
+							</select>
+						</div>
+					</div>
+					<div class="tr">
+						<div class="createVMtd"><label>Memory: </label></div>
+						<div class="createVMtd">
+							<select id='textbox_memory'>
+							  <option value="512">512 MB</option>
+							  <option value="1024">1024 MB</option>
+							  <option value="2048">2048 MB</option>
+							</select>
+						</div>
+					</div>	
+					<div class="tr">
+						<input type='button' value='Create' id='button_create'>
+					</div>
+					<div id='VM_loading' style='display: none;'>
+						<img alt='Loading' src='/assets/loading-9ee555d828c00522cfbbe9720b6fa51e.gif' />
+					</div>
+				</div>					
+			</div>
+		</section>
+		<%end%>	
+	</div>		
+</div>	
+
+
+
+
+<%if session[:user_id]%>
+<script>
+
+	var appIconTable = new Array();
+	var appNameTable = new Array();
+        var app_list_timer;
+	$(document).ready(function()
+	{		
+		var request_app_table = $.ajax({
+				url: "/main/getAppTablejs",
+				type: "GET",
+				dataType: "json"
+				});
+		request_app_table.done(function(msg) {
+			
+					jQuery.each(msg, function(index, value)
+					{				
+					  appIconTable[index]=value.name+".png";
+					  appNameTable[index]=value.name;							  
+					});			
+
+				});
+		request_app_table.fail(function(jqXHR, textStatus) {	
+				alert( "Requesting app table failed, refreshing page again");
+				});
+		
+		<%@vm_lists.each do |v|%>	
+			addVM(<%=v.serial_no %>, <%=v.cpu %>, <%=v.memory %>);		   
+		<%end%>
+		
+	    $("#button_create").click(function () {
+			$("#VM_loading").show();
+			var request = $.ajax({
+					url: "/main/createVMjs",
+					type: "POST",
+					data: {cpu : $('#textbox_cpu').val(), memory: $('#textbox_memory').val()},
+					dataType: "json"
+					});
+			request.done(function(msg) {
+					$("#VM_loading").hide();	
+						if(!msg.success) 
+						{
+							alert("Error: "+msg.reason);
+						}
+						else
+						{
+							addVM(msg.serial_no, msg.cpu, msg.memory);	
+							$('#textbox_cpu').val('');
+							$('#textbox_memory').val('')
+						}
+					});
+			request.fail(function(jqXHR, textStatus) {
+					$("#VM_loading").hide();				
+					alert( "Requesting failed, try again");
+					});	    	    	
+	     });				
+	});
+	  
+	function addVM(serial_no, cpu, memory)
+	{		
+		var newDetailDiv = $(document.createElement('div')).attr({ id: 'VM_detail_' + serial_no, class: 'tr'});
+		newDetailDiv.append("Serial_NO:"+serial_no+"<br>CPU:"+cpu+" Memory:"+memory);			
+		newDetailDiv.appendTo("#VMField");
+	    
+	    var newPicDiv = $(document.createElement('div')).attr({ id: 'VM_pic_' + serial_no, class: 'tr'});
+		newPicDiv.append("<a href='#' onclick='createAppIcon("+
+						  serial_no+
+						 ");'><img alt='Computer' height='100' src='/assets/computer-84913ac52166779aa1078e425e57161e.png' width='100' /></a>"+
+						 "<a href='#' onclick='shutDownAJAX("+
+						  serial_no+
+						 ");'><img alt='Shutdown' height='27' src='/assets/shutdown-8be4981dfeb096ad4b7c360df917211d.png' width='27' /></a>"+			
+						 "<a href='#' onclick='restartAJAX("+
+						  serial_no+
+						 ");'><img alt='Restart' height='27' src='/assets/restart-23a3f3b77aba01eaea8c795af4f2d103.png' width='27' /></a>"
+						 );
+		newPicDiv.appendTo("#VMField");	
+						 
+	    var newLoadingDiv = $(document.createElement('div')).attr({ id: 'VM_loading_' + serial_no, class: 'tr'});
+		newLoadingDiv.append("<img alt='Loading' src='/assets/loading-9ee555d828c00522cfbbe9720b6fa51e.gif' />");				 					 
+		newLoadingDiv.appendTo("#VMField");	
+		newLoadingDiv.hide();		
+	}	  	  
+	
+	function restartAJAX(seri) 
+	{	
+		$("#VM_loading_"+seri).show();
+		var request = $.ajax({
+				url: "/main/restartVMjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+					$("#VM_loading_"+seri).hide();	
+					if(!msg.success) 
+					{
+						alert("Serial No:"+msg.serial_no+" restarting failed");
+					}
+					else
+					{
+						alert("Serial No:"+msg.serial_no+" restarting successed");
+					}
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#VM_loading_"+seri).hide();				
+				alert( "Requesting failed, try again");
+				});
+	} 
+
+	function shutDownAJAX(seri) 
+	{	
+		$("#VM_loading_"+seri).show();
+		var request = $.ajax({
+				url: "/main/shutDownVMjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+				$("#VM_loading_"+seri).hide();	
+					if(!msg.success) 
+					{
+						alert("Serial No:"+msg.serial_no+" shutdown failed");
+					}
+					else
+					{
+						$('#VM_detail_'+msg.serial_no).remove();
+						$('#VM_pic_'+msg.serial_no).remove();
+
+						clearInterval(app_list_timer);
+						$('#appField').empty();	
+						$('#appListTableField').empty();
+					}
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#VM_loading_"+seri).hide();	
+				alert( "Requesting failed, try again");
+				});
+	} 	
+	
+	
+	function createAppIcon(seri)
+	{	
+                $('#applicationTitle').text("Serial NO "+seri+" 's applications")    
+	        $('#appListTableField').empty();	    
+	        var newLoadingDiv = $(document.createElement('div')).attr({ id: 'app_list_loading'});
+		newLoadingDiv.append("<img alt='Loading' src='/assets/loading-9ee555d828c00522cfbbe9720b6fa51e.gif' />");				 					 
+		newLoadingDiv.appendTo("#appListField");	
+		newLoadingDiv.hide();
+
+                $('#appListTableField').empty();
+		getAppListAjax(seri);
+
+		clearInterval(app_list_timer); 
+	        app_list_timer = setInterval(function() {   				
+					$('#appListTableField').empty();
+					getAppListAjax(seri);	
+					}, 3000);
+	    
+        	$('#appField').empty();	
+		var app_length=appNameTable.length;
+                var newTR=$(document.createElement('div')).attr({ class: 'tr'});;
+        	$.each(appNameTable, function(index, value) {		
+			var newPicDiv = $(document.createElement('div')).attr({ id: 'app_pic_appField_'+index, class: 'td'});
+			newPicDiv.append("<a href='#' style='text-decoration: none;' onclick='openAppAjax("+
+							  seri+
+							  ","+
+							  index+
+							 ");'><img alt='openApp' height='100' src='/assets/"+
+							 appIconTable[index]+ 
+							 "' width='100' /><br>"+
+							 value+
+							 "</a><br>"+
+							 "<img alt='Loading' src='/assets/app_loading.gif' style='display:none;' id='app_loading_appField_"+
+							 index+ 
+							 "'/>"		
+							 );
+                        newTR.append(newPicDiv);	
+                        if((index+1)%4== 0 && index!= 0)
+			{
+				newTR.appendTo("#appField");
+				newTR = $(document.createElement('div')).attr({ class: 'tr'});     
+			}			
+			else if(index === app_length - 1)
+			{
+				newTR.appendTo("#appField");
+			}	
+		    });
+		}    	    
+
+        function openAppAjax(seri, app_name_id)
+        {
+                $("#app_loading_appField_"+app_name_id).show();
+                var return_port;
+                var request = $.ajax({
+                                    url: "/main/openAppjs",
+		                    type: "GET",
+			            data: {serial_no : seri, app_name_id : app_name_id },
+				    dataType: "json"
+				    });
+		    request.done(function(msg) {
+                                $("#app_loading_appField_"+app_name_id).hide();
+		                if(!msg.success)
+		                {
+		                    alert("Serial No:"+msg.serial_no+" opening app failed");
+		                }
+		                else
+		                {
+		                   var win =window.open('http://140.113.151.70:'+msg.port, msg.app_name);
+		                   $('#appListTableField').empty();
+		                   getAppListAjax(seri);
+                                   return_port=msg.port;
+
+	                            var timer = setInterval(function() {
+                                    	if(win.closed) {
+                                    	    clearInterval(timer);
+                                            
+                                            if(checkAppAjax(return_port))
+                                            {
+						    var r=confirm("Serial_NO "+seri+" :Keep the process "+msg.port+" ?");
+						    if (r!=true)
+						    {
+						    	closeAppAjax(return_port);
+						    }
+                                            }
+                                          }
+                                    }, 1000);
+                                   }
+                                });
+                request.fail(function(jqXHR, textStatus) {
+                                $("#app_loading_appField_"+app_name_id).hide();
+				alert( "Requesting failed, try again");
+		                                    });
+	}
+
+
+        function openAppInListAjax(seri, app_port)
+        {
+		var win =window.open('http://140.113.151.70:'+app_port);
+                var timer = setInterval(function() {
+ 	               if(win.closed) 
+ 	               {
+ 	                   clearInterval(timer);
+ 	                   if(checkAppAjax(app_port))
+ 	                   {
+				    var r=confirm("Serial_NO "+seri+" :Keep the process "+app_port+" ?");
+				    if (r!=true)
+				    {
+				    	closeAppAjax(app_port);
+				    }
+ 	                   }
+        	       }
+                }, 1000);
+	}
+
+
+
+	function closeAppAjax(port)
+	{	
+		var request = $.ajax({
+				url: "/main/closeAppjs",
+				type: "GET",
+				data: {port : port },
+				dataType: "json"
+				});
+		request.fail(function(jqXHR, textStatus) {	
+				alert( "Requesting failed");
+				});				
+		
+	}
+
+	function checkAppAjax(port)
+	{	
+                var exist;
+		var request = $.ajax({
+				url: "/main/checkAppjs",
+				type: "GET",
+				data: {port : port },
+				dataType: "json",
+                                async: false
+				});
+		request.done(function(msg) {
+				exist=msg.exist;
+				});
+		return exist;
+        }
+
+	function getAppListAjax(seri)	
+	{
+		$("#app_list_loading").show();
+		var request = $.ajax({
+				url: "/main/getAppListjs",
+				type: "GET",
+				data: {serial_no : seri},
+				dataType: "json"
+				});
+		request.done(function(msg) {
+				$("#app_list_loading").hide();						
+					jQuery.each(msg, function()
+					{
+					  var newPicDiv = $(document.createElement('div')).attr({ id: 'app_pic_appTableField_'+this.app_name_id+'_'+this.port, class: 'td'});
+					  newPicDiv.append("<a href='#' style='text-decoration: none;' onclick='openAppInListAjax("+seri+
+							  ","+this.port+");'><img alt='openApp' height='100' src='/assets/"+
+							 appIconTable[this.app_name_id]+ 
+							 "' width='100' /><br>"+
+						 	appNameTable[this.app_name_id]+						 
+						 	"</a>"	
+							 );
+                                           newPicDiv.appendTo("#appListTableField");							  
+					});
+				});
+		request.fail(function(jqXHR, textStatus) {
+				$("#app_list_loading").hide();	
+				alert( "Requesting failed, try again");
+				});		
+	}
+</script>
+<%end%>
+-->

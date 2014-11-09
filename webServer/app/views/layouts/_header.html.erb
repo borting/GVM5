@@ -1,0 +1,11 @@
+<div id="top_framecontent">
+	<div class="innertube" style="display: inline-block;">	
+		<%=image_tag('HVMA_icon.png', :size=>'130x80')%>
+	</div>
+	<div style="display: inline-block; ">
+	<%if !session[:user_id].blank?%>
+		Hello! <%=User.find_by_id(session[:user_id]).name%>
+		<%= link_to image_tag("logout.png", :size=>"25x25") , {:controller=>:main, :action=>:logout}%>		
+	<%end%>
+	</div>
+</div>
