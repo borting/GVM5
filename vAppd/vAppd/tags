@@ -1,0 +1,97 @@
+CHECK_INT	hive.c	13
+CONN_OBJ	Obj.h	22
+DATA_OBJ	Obj.h	13
+DEBUG_FLAG	ErrDbg.h	27
+DEBUG_FLAG	ErrDbg.h	29
+DIR_LEN	ComProtocol.h	6
+DIR_OBJ	Obj.h	34
+LEN	hive.c	15
+MgrMsg	MgrMsg.h	12
+MvAppd	vAppd.c	/^int main(int argc, char *argv[])$/
+NAME_LEN	Obj.h	4
+REPMsg	procReq.c	21
+REP_CH_DIR	ComProtocol.h	92
+REP_OPEN_APP	ComProtocol.h	17
+REP_OPEN_FILE	ComProtocol.h	29
+REQMsg	procReq.c	20
+REQ_CH_DIR	ComProtocol.h	90
+REQ_CLOSE_APP	ComProtocol.h	35
+REQ_DEL_DIR	ComProtocol.h	79
+REQ_DEL_FILE	ComProtocol.h	57
+REQ_NEW_DIR	ComProtocol.h	68
+REQ_NEW_FILE	ComProtocol.h	46
+REQ_OPEN_APP	ComProtocol.h	15
+REQ_OPEN_FILE	ComProtocol.h	27
+Reaper	vAppd.c	/^void Reaper(int sig)$/
+VAPP_REP	ComProtocol.h	126
+VAPP_REQ	ComProtocol.h	111
+WAIT_TIME	hive.c	12
+_COM_PROTOCOL_H_	ComProtocol.h	2
+_ERRDBG_H_	ErrDbg.h	2
+_HIVE_H_	hive.h	2
+_MGRMSG_H_H	MgrMsg.h	2
+_OBJ_H_	Obj.h	2
+_PROC_REQUEST_H_	procReq.h	2
+_SOCKOP_H_	sockop.h	6
+app	ComProtocol.h	14
+app	ComProtocol.h	25
+babySitter	hive.c	/^int babySitter(pid_t ppid, char *cmd, unsigned sho/
+ch_dir	ComProtocol.h	109
+ch_dir	ComProtocol.h	124
+close_app	ComProtocol.h	104
+cmd	ComProtocol.h	110
+connectsock	sockop.c	/^int connectsock(const char *host, const char *serv/
+del_dir	ComProtocol.h	108
+del_file	ComProtocol.h	106
+destroy	vAppd.c	/^void destroy()$/
+dir	ComProtocol.h	67
+dir	ComProtocol.h	78
+dir	ComProtocol.h	89
+errexit	sockop.h	/^#define errexit(format,arg...) exit(printf(format,/
+execCMD	hive.c	18
+extractGene	hive.c	/^int extractGene(char *nick, char **args, char *gen/
+file	ComProtocol.h	26
+file	ComProtocol.h	45
+file	ComProtocol.h	56
+file_num	Obj.h	33
+init	vAppd.c	/^void init()$/
+initProcRoutine	procReq.c	/^void initProcRoutine()$/
+len	Obj.h	11
+mgrMsg	hive.c	17
+mgrMsg	procReq.c	17
+mgrMsg	vAppd.c	20
+mgrPortStr	vAppd.c	19
+mgrfd	procReq.c	16
+mgrfd	vAppd.c	18
+msg	ComProtocol.h	125
+name	Obj.h	12
+new_dir	ComProtocol.h	107
+new_file	ComProtocol.h	105
+open_app	ComProtocol.h	102
+open_app	ComProtocol.h	122
+open_file	ComProtocol.h	103
+open_file	ComProtocol.h	123
+passivesock	sockop.c	/^int passivesock(const char *service, const char *t/
+pid	MgrMsg.h	9
+printDebug	ErrDbg.h	/^#define printDebug(fmt,arg...) \\$/
+printErr	ErrDbg.h	/^#define printErr(format,arg...) \\$/
+procCloseApp	procReq.c	/^int procCloseApp(int connfd)$/
+procOpenApp	procReq.c	/^int procOpenApp(int connfd)$/
+procRoutine	procReq.c	/^int procRoutine(int connfd, char *mgrPortStr)$/
+pvt_ip	Obj.h	20
+pvt_port	MgrMsg.h	10
+pvt_port	Obj.h	21
+readConnObj	Obj.c	/^int readConnObj(int fd, CONN_OBJ *connObj)$/
+readDataObj	Obj.c	/^int readDataObj(int fd, DATA_OBJ *dataObj)$/
+replyCloseApp	procReq.c	/^#define replyCloseApp(a, b) \\$/
+replyOpenApp	procReq.c	/^int replyOpenApp(int connfd, int retval, unsigned /
+req	MgrMsg.h	11
+retval	ComProtocol.h	120
+searchGene	hive.c	/^int searchGene(char *rawCMD, char **cmd, char **ar/
+sockfd	vAppd.c	13
+spawnApp	hive.c	/^int spawnApp(char *cmd, char **args, char **envs, /
+stderrexit	ErrDbg.h	/^#define stderrexit(errcode,format,arg...) \\$/
+type	ComProtocol.h	100
+type	ComProtocol.h	119
+type	MgrMsg.h	7
+vAppdPortStr	vAppd.c	14

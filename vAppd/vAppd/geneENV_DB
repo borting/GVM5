@@ -1,0 +1,15 @@
+gedit
+calc
+term
+pdf
+mon
+shark
+word SAL_USE_VCLPLUGIN=gtk3
+excel SAL_USE_VCLPLUGIN=gtk3
+ppt SAL_USE_VCLPLUGIN=gtk3
+draw SAL_USE_VCLPLUGIN=gtk3
+math SAL_USE_VCLPLUGIN=gtk3
+sol
+sudoku
+mines
+mahjon

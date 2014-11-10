@@ -1,0 +1,15 @@
+gedit /usr/bin/gedit
+calc /usr/bin/gnome-calculator
+term /usr/bin/gnome-terminal
+pdf /usr/bin/evince
+mon /usr/bin/gnome-system-monitor
+shark /usr/bin/wireshark
+word /usr/lib/libreoffice/program/soffice.bin --nologo --writer -norestore
+excel /usr/lib/libreoffice/program/soffice.bin --nologo --calc -norestore
+ppt /usr/lib/libreoffice/program/soffice.bin --nologo --impress -norestore
+draw /usr/lib/libreoffice/program/soffice.bin --nologo --draw -norestore
+math /usr/lib/libreoffice/program/soffice.bin --nologo --math -norestore
+sol /usr/games/sol
+sudoku /usr/bin/python /usr/games/gnome-sudoku
+mines /usr/games/gnome-mines
+mahjon /usr/games/gnome-mahjongg
